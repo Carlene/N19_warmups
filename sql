@@ -59,7 +59,7 @@ WITH newest_orders AS(
 	ORDER BY
 		o.orderdate)
 
-SELECT *
+SELECT DISTINCT *
 FROM (
 SELECT
 	oo.orderdate - no.orderdate 
@@ -80,6 +80,9 @@ ORDER BY
 
 WHERE
 	most_days < 4
+
+ORDER BY
+	makingtop3.country
 
 
 
@@ -138,9 +141,11 @@ ON
 	od.productid = p.productid)
 
 SELECT 
-	* 
+	*
+
 FROM
-	most_ordered
+	most_ordered as mo
+	
 WHERE
 	country_orders < 4;
 
