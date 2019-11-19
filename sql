@@ -56,6 +56,37 @@ WHERE
 -- "highest number of total units ordered within a country"
 -- hint: do something with the quanity column
 
+-- Ignores quantity ties, picks a top 3
+
+WITH most_ordered AS(
+SELECT
+	p.productname
+	,o.shipcity
+	,od.quantity
+	,o.shipcountry
+	,ROW_NUMBER() OVER (PARTITION BY o.shipcountry ORDER BY od.quantity DESC) as country_orders
+
+FROM
+	orders as o
+JOIN
+	orderdetails as od 
+ON
+	o.orderid = od.orderid
+JOIN 
+	products as p
+ON
+	od.productid = p.productid)
+
+SELECT 
+	* 
+FROM
+	most_ordered
+WHERE
+	country_orders < 4;
+
+
+-- Shows ties of quantity
+
 WITH most_ordered AS(
 SELECT
 	p.productname
@@ -80,5 +111,4 @@ SELECT
 FROM
 	most_ordered
 WHERE
-	country_orders < 4
-	
+	country_orders < 4;
