@@ -1,5 +1,7 @@
 -- Get a list of the 3 long-standing customers for each country
 
+-- Customers with oldest orders by orderdate
+
 WITH oldest_customers AS(
 SELECT
 	contactname
@@ -22,6 +24,64 @@ FROM
 
 WHERE
 	c_by_country < 4
+
+-- Customers with oldest orders by amount of days from their first order to last order
+
+WITH newest_orders AS(
+	SELECT
+		o.orderdate
+		,c.customerid
+		,c.country
+
+	FROM
+		customers as c
+	JOIN
+		orders as o
+	ON
+		c.customerid = o.customerid
+
+	ORDER BY
+		o.orderdate DESC)
+
+,oldest_orders AS(
+	SELECT
+		o.orderdate
+		,c.customerid
+		,c.country
+
+	FROM
+		customers as c
+	JOIN
+		orders as o
+	ON
+		c.customerid = o.customerid
+
+	ORDER BY
+		o.orderdate)
+
+SELECT *
+FROM (
+SELECT
+	oo.orderdate - no.orderdate 
+	,oo.customerid
+	,oo.country
+	,RANK() OVER (PARTITION BY oo.country ORDER BY oo.orderdate - no.orderdate DESC) as most_days
+	
+FROM
+	oldest_orders as oo
+JOIN
+	newest_orders as no
+ON
+	oo.customerid = no.customerid
+
+
+ORDER BY
+	3) as makingtop3
+
+WHERE
+	most_days < 4
+
+
 
 -- The above query gives duplicate people but has a top 3. SELECT DISTINCT in my outer query also gives me duplicate people. Will work on later.
 
