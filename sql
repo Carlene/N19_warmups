@@ -29,7 +29,7 @@ WHERE
 
 WITH newest_orders AS(
 	SELECT
-		o.orderdate
+		MAX(o.orderdate) as newest_date
 		,c.customerid
 		,c.country
 
@@ -40,12 +40,15 @@ WITH newest_orders AS(
 	ON
 		c.customerid = o.customerid
 
+	GROUP BY
+		2, 3
+
 	ORDER BY
-		o.orderdate DESC)
+		1)
 
 ,oldest_orders AS(
 	SELECT
-		o.orderdate
+		MIN(o.orderdate) as oldest_date
 		,c.customerid
 		,c.country
 
@@ -56,16 +59,19 @@ WITH newest_orders AS(
 	ON
 		c.customerid = o.customerid
 
+	GROUP BY
+		2, 3
+
 	ORDER BY
-		o.orderdate)
+		1)
 
 SELECT DISTINCT *
 FROM (
 SELECT
-	oo.orderdate - no.orderdate 
+	no.newest_date - oo.oldest_date 
 	,oo.customerid
 	,oo.country
-	,RANK() OVER (PARTITION BY oo.country ORDER BY oo.orderdate - no.orderdate DESC) as most_days
+	,RANK() OVER (PARTITION BY oo.country ORDER BY oo.oldest_date - no.newest_date) as most_days
 	
 FROM
 	oldest_orders as oo
@@ -83,7 +89,7 @@ WHERE
 
 ORDER BY
 	makingtop3.country
-
+	,most_days
 
 
 -- The above query gives duplicate people but has a top 3. SELECT DISTINCT in my outer query also gives me duplicate people. Will work on later.
@@ -145,7 +151,7 @@ SELECT
 
 FROM
 	most_ordered as mo
-	
+
 WHERE
 	country_orders < 4;
 
